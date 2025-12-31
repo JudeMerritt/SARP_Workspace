@@ -1,5 +1,7 @@
+//TODO: Add desciptive comments with @brief
+
 #include <stdint.h>
-#include "internal/mmio.h"
+#include "internal/include/mmio.h"
 
 // ((100 * 1,000,000) * 0.001 - 1)
 #define RELOAD_VAL 0x1869F
