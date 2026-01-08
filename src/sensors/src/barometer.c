@@ -42,8 +42,22 @@ typedef enum {
     PROM_ADDR_CRC          = 0xAE
 }prom_addr_t;
 
+static inline ti_errc_t validate_dev_values(barometer_t *dev) {
+    ti_errc_t status = TI_ERRC_NONE;
+
+    //Check that SPI instance is valid
+    if ((dev->device.instance < 1) || (dev->device.instance > 6)) status = TI_ERRC_INVALID_ARG;
+
+    //TODO: May also want to check CS pin
+
+    //Check that OSR value is valid
+    if ((dev->osr < 0x00) || (dev->osr > 0x08)) status = TI_ERRC_INVALID_ARG;
+
+    return status;
+}
+
 // Provides the necessary conversion time delay based on the specified oversampling ratio (OSR) using the SysTick timer.
-static ti_errc_t barometer_delay(uint8_t osr) {
+static void barometer_delay(uint8_t osr) {
     uint8_t conversion_time;
 
    /*
@@ -65,8 +79,6 @@ static ti_errc_t barometer_delay(uint8_t osr) {
     }
 
     delay(conversion_time);
-
-    return TI_ERRC_NONE;
 }
 
 // Sends a command to the sensor and reads the multi-byte response.
@@ -102,25 +114,33 @@ static uint32_t barometer_transfer(barometer_t *dev, uint8_t cmd, uint8_t bytes_
  **************************************************************************************************/
 
 ti_errc_t barometer_init(barometer_t *dev) {
+    // Check OSR and device fields
+    ti_errc_t status = validate_dev(dev);
+    if (status != TI_ERRC_NONE) return status;
+
     // Reset the sensor
     barometer_transfer(dev, RESET, 0);
 
     // Wait for internal reload
-    ti_errc_t status = barometer_delay(dev->osr); 
-    if (status != TI_ERRC_NONE) return status;
-
+    barometer_delay(dev->osr); 
+    
     // Read PROM values
-    dev->config_data.sens     = (uint16_t)barometer_transfer(dev, PROM_ADDR_C1, 2);
-    dev->config_data.off      = (uint16_t)barometer_transfer(dev, PROM_ADDR_C2, 2);
-    dev->config_data.tcs      = (uint16_t)barometer_transfer(dev, PROM_ADDR_C3, 2);
-    dev->config_data.tco      = (uint16_t)barometer_transfer(dev, PROM_ADDR_C4, 2);
-    dev->config_data.t_ref    = (uint16_t)barometer_transfer(dev, PROM_ADDR_C5, 2);
-    dev->config_data.tempsens = (uint16_t)barometer_transfer(dev, PROM_ADDR_C6, 2);
+    dev->calibration_data.sens     = (uint16_t)barometer_transfer(dev, PROM_ADDR_C1, 2);
+    dev->calibration_data.off      = (uint16_t)barometer_transfer(dev, PROM_ADDR_C2, 2);
+    dev->calibration_data.tcs      = (uint16_t)barometer_transfer(dev, PROM_ADDR_C3, 2);
+    dev->calibration_data.tco      = (uint16_t)barometer_transfer(dev, PROM_ADDR_C4, 2);
+    dev->calibration_data.t_ref    = (uint16_t)barometer_transfer(dev, PROM_ADDR_C5, 2);
+    dev->calibration_data.tempsens = (uint16_t)barometer_transfer(dev, PROM_ADDR_C6, 2);
 
     return TI_ERRC_NONE;
 }
 
-ti_errc_t get_barometer_data(barometer_t *dev) {
+barometer_result_t *get_barometer_data(barometer_t *dev) {
+    barometer_result_t result;
+    barometer_result_t *ptr_result = &result;
+
+    result.errc = TI_ERRC_NONE;
+
     // Get raw D1 pressure data
     barometer_transfer(dev, D1_BASE_CMD + dev->osr, 0);
     barometer_delay(dev->osr);
@@ -131,15 +151,17 @@ ti_errc_t get_barometer_data(barometer_t *dev) {
     barometer_delay(dev->osr);
     uint32_t D2 = barometer_transfer(dev, ADC_READ, 3);
 
+    if ((D1 || D2) <= 0) result.errc = TI_ERRC_UNKNOWN;
+
     // Calculate temperature difference
-    int32_t dT = D2 - ((int32_t)dev->config_data.t_ref << 8);
+    int32_t dT = D2 - ((int32_t)dev->calibration_data.t_ref << 8);
 
     // Calculate actual temperature 
-    int32_t temp = 2000 + (((int64_t)dT * dev->config_data.tempsens) >> 23);
+    int32_t temp = 2000 + (((int64_t)dT * dev->calibration_data.tempsens) >> 23);
 
     // Calculate initial offset and sensitivity
-    int64_t off  = ((int64_t)dev->config_data.off << 16) + (((int64_t)dev->config_data.tco * dT) >> 7);
-    int64_t sens = ((int64_t)dev->config_data.sens << 15) + (((int64_t)dev->config_data.tcs * dT) >> 8);
+    int64_t off  = ((int64_t)dev->calibration_data.off << 16) + (((int64_t)dev->calibration_data.tco * dT) >> 7);
+    int64_t sens = ((int64_t)dev->calibration_data.sens << 15) + (((int64_t)dev->calibration_data.tcs * dT) >> 8);
 
     // Second order temperature compensation
     int64_t T2    = 0;
@@ -158,7 +180,6 @@ ti_errc_t get_barometer_data(barometer_t *dev) {
             SENS2 = SENS2 + (11 * ((int64_t)(temp + 1500) * (temp + 1500)) >> 1);
         }
     }
-    
 
     temp -= T2;
     off  -= OFF2;
@@ -168,28 +189,10 @@ ti_errc_t get_barometer_data(barometer_t *dev) {
     int32_t P = (((D1 * sens) >> 21) - off) >> 15;
 
     // Results
-    dev->result.pressure    = (float)P / 100.0f;    // Units of mbar/hPa
-    dev->result.temperature = (float)temp / 100.0f; // Units of Celcius
+    result.pressure    = (float)P / 100.0f;    // Units of mbar/hPa
+    result.temperature = (float)temp / 100.0f; // Units of Celcius
 
-    return TI_ERRC_NONE;
+    if ((result.pressure || result.temperature) <= 0) result.errc = TI_ERRC_UNKNOWN;
+
+    return ptr_result;
 }
-
-/**
- * TODOS:
- * 1. Create a private function that verifies the parameters the numbers the user passes in.
- * 
- * 2. If SPI fails, result may just be zero and no error will be detected. You may be able to pass
- *    a pointer for result and return an enum error code instead. (LINE 80)
- * 
- * 3. I think it would be better if you did a param validity check at beginning, then just call delay by itself. (LINE 117)
- * 
- * 4. Double check if you need the delay before reading from the ADC (think about a way to work around this)
- * 
- * 5. Would be best to do this as an interupt
- * 
- * 6. You should return the result struct 
- * 
- * 7. Take this out of the barometer_t struct and just create the result struct in your function then return a pointer to it. (inside .h)
- * 
- * 8. Include errc inside the result struct. 
- */

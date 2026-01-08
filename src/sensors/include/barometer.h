@@ -49,7 +49,7 @@ typedef struct {
     uint16_t tco;      // C4 Temperature coefficient of pressure offset
     uint16_t t_ref;    // C5 Reference temperature
     uint16_t tempsens; // C6 Temperature coefficient of the temperature 
-}barometer_config_data_t; //TODO: Is it more acurate to call this barometer_calibration_data_t?
+}barometer_calibration_data_t; //TODO: Is it more acurate to call this barometer_calibration_data_t?
 
 /** 
  * @brief Pressure and temperature results
@@ -57,6 +57,7 @@ typedef struct {
 typedef struct {
     float pressure;    // Temperature compensated pressure from 10 mbar to 1200 mbar with 0.01 mbar resolution
     float temperature; // Temperature from -40 C to 85 C with 0.01 C resulution
+    ti_errc_t errc;
 }barometer_result_t;
 
 /** 
@@ -65,8 +66,7 @@ typedef struct {
 typedef struct {
     spi_device_t device;                 // SPI instance and CS pin 
     barometer_osr_t osr;                 // Oversampling setting
-    barometer_config_data_t config_data; // Device configuration
-    barometer_result_t result;           // Result (pressure and temperature) //TODO: Take this out of the barometer_t struct and just create the result struct in your function then return a pointer to it.
+    barometer_calibration_data_t calibration_data; // Device configuration 
 } barometer_t;
 
 /**************************************************************************************************
@@ -85,6 +85,6 @@ ti_errc_t barometer_init(barometer_t *dev);
  * @brief Performs a conversion and calculates compensated pressure and temperature.
  * 
  * @param dev pointer to the barometer_t structure
- * @return ti_errc_t TI_ERRC_NONE on success, or another error code on failure
+ * @return a pointer to the barometer_result_t struct, which contains the pressure and temperature
  */
-ti_errc_t get_barometer_data(barometer_t *dev);
+barometer_result_t *get_barometer_data(barometer_t *dev);

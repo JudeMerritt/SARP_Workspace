@@ -25,15 +25,12 @@
 
 /**
  * @brief Initializes the systick timer. 
- * 
- * @return ti_errc_t TI_ERRC_NONE on success, or another error code on failure
  */
-ti_errc_t systick_init();
+void systick_init();
 
 /**
  * @brief Provides an exact time delay using the systick timer.
  * 
  * @param delay The duration of the delay in milleseconds (ms)
- * @return ti_errc_t TI_ERRC_NONE on success, or another error code on failure
  */
-ti_errc_t systick_delay(uint32_t delay);
+void systick_delay(uint32_t delay);

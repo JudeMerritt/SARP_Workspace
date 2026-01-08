@@ -25,43 +25,31 @@
 #include "periphs/include/systick.h"
 
 // ((480 * 1,000,000) * 0.001 - 1)
-#define RELOAD_VAL 0x752FF
+// 1ms countdown
+#define DEFAULT_RELOAD_VAL 0x752FF
+#define CLOCK_FREQ 480000000
 
-ti_errc_t systick_init() {
+void systick_init() {
     //Program reload value
-    WRITE_FIELD(STK_RVR, STK_RVR_RELOAD, RELOAD_VAL);
+    WRITE_FIELD(STK_RVR, STK_RVR_RELOAD, DEFAULT_RELOAD_VAL);
 
     //Set clock source 
     SET_FIELD(STK_CSR, STK_CSR_CLKSOURCE);
 
     //Enable SysTick
     SET_FIELD(STK_CSR, STK_CSR_ENABLE);
-
-    return TI_ERRC_NONE;
 }
 
-ti_errc_t systick_delay(uint32_t delay) {
+void systick_delay(uint32_t delay) {
     if (delay == 0) return TI_ERRC_INVALID_ARG;
+
+    //Clear current value
+    WRITE_FIELD(STK_CVR, STK_CVR_CURRENT, 0U);
 
     //Run delay loop
     for (int i = 0; i < delay; i++) {   
-        //Clear current value
-        WRITE_FIELD(STK_CVR, STK_CVR_CURRENT, 0U);
-
         while (IS_FIELD_CLR(STK_CSR, STK_CSR_COUNTFLAG)){
             asm("NOP");
         }
     }
-
-    return TI_ERRC_NONE;
 }
-
-/**
- * TODO: 
- * 1. Could do some error checks before returning TI_ERRC_NONE in the init function.
- * 
- * 2. For systick driver if you allow the client to specifiy the countdown time make sure that the 
- *    speed of the m7 core is divisable by their input. For example, 480Mhz is divisable by 1000 ms / 1 s. 
- *    You can warn the client of this fact -- that for best accuracy this fact must be true -- or you can 
- *    just return an error code. The former is probably best. 
- */
