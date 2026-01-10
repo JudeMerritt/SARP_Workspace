@@ -21,8 +21,8 @@
 
 #pragma once
 #include <stdint.h>
-#include "periphs/include/spi.h"
-#include "util/include/errc.h"
+#include "include/spi.h"
+#include "include/errc.h"
 
 /**************************************************************************************************
  * @section Type definitions

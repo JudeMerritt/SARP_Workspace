@@ -20,10 +20,10 @@
  */
 
 #include <stdint.h>
-#include "periphs/include/spi.h"
-#include "util/include/errc.h"
-#include "periphs/include/systick.h"
-#include "sensors/include/barometer.h"
+#include "include/spi.h"
+#include "include/errc.h"
+#include "include/systick.h"
+#include "include/barometer.h"
 
 #define D1_BASE_CMD 0x40
 #define D2_BASE_CMD 0x50

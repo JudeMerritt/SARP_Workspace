@@ -1,3 +1,3 @@
-#include "periphs/include/qspi.h"
+#include "include/qspi.h"
 #include <stdint.h>
 

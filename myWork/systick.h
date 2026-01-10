@@ -21,7 +21,7 @@
 
 #pragma once
 #include <stdint.h>
-#include "util/include/errc.h"
+#include "include/errc.h"
 
 /**
  * @brief Initializes the systick timer. 
