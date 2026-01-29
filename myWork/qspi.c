@@ -21,7 +21,7 @@ ti_errc_t qspi_init() {
     WRITE_FIELD(GPIOx_MODER[1], GPIOx_MODER_MODEx[2], 0b10);        // Set to alternate mode
     WRITE_FIELD(GPIOx_AFRL[1], GPIOx_AFRL_AFSELx[2], 0b1001);       // Define as alternate function nine (AF9)
     WRITE_FIELD(GPIOx_OSPEEDR[1], GPIOx_OSPEEDR_OSPEEDx[2], 0b11);  // Set to very high speed
-    WRITE_FIELD(GPIOx_PUPDR[1], GPIOx_PUPDR_PUPDx[2], 0b10);        // Pull CLK pin down (CLK should be low when idle)
+    WRITE_FIELD(GPIOx_PUPDR[1], GPIOx_PUPDR_PUPDx[2], 0b10);        // Pull CS pin down (CS should be low when idle)
     
     // QSPI_CS : PG6
     SET_FIELD(RCC_AHB4ENR, RCC_AHB4ENR_GPIOGEN);                    // Enable GPIOG clock
@@ -54,7 +54,7 @@ ti_errc_t qspi_init() {
 
     // Device Configuration
     WRITE_FIELD(QUADSPI_CR, QUADSPI_CR_PRESCALER, 2U); // TODO: Find the kernel clock speed and find out what factor it needs to be divided by
-    SET_FIELD(QUADSPI_CR, QUADSPI_CR_SSHIFT);          // TODO: This seems to add some extra stability, may not be needed, though
+    SET_FIELD(QUADSPI_CR, QUADSPI_CR_SSHIFT);          // This seems to add some extra stability
     WRITE_FIELD(QUADSPI_CR, QUADSPI_CR_FTHRES, 3U);    // Raises the FIFO threshold flag when FIFO contains three bytes
     CLR_FIELD(QUADSPI_CR, QUADSPI_CR_DFM);             // Duel-flash mode disabled (this is assuming that we're not using two external memories)
     CLR_FIELD(QUADSPI_CR, QUADSPI_CR_FSEL);            // FLASH 1 selected 
@@ -121,7 +121,7 @@ ti_errc_t qspi_poll_status_blk() {
     WRITE_FIELD(QUADSPI_PIR, QUADSPI_PIR_INTERVAL, 32U); // Wait 32 cycles per "check-in"
 
     uint32_t ccr_val = (0b10 << 26)             | // Set FMODE to 0b10 for automatic polling mode
-                       (QSPI_MODE_SINGLE << 24) | // Data uses single qspi line
+                       (QSPI_MODE_QUAD << 24)   | // Data uses all four qspi lines                 // TODO: Double check that this is correct for polling mode
                        (0U << 18)               | // No dummy bytes
                        (QSPI_MODE_NONE << 10)   | // No address phase
                        (QSPI_MODE_SINGLE << 8)  | // Instruction over single qspi line
@@ -169,17 +169,10 @@ ti_errc_t qspi_exit_memory_mapped() {
  *    You could set a timeout value (number of ticks), the subtract from it each time through the while loop.
  *    When the timeout variable reaches zero, you return an error code. See if there is a better way to do this
  *    before implementing.
- * 2. Ask people if the comment-heavy approach is useful, or overwhelming. 
  * 
  * 3. Double check the main data loop of qspi_command. Even with timeouts, I'm worried that it's an inefficient and 
- *    time consuming way to send data. Consider asking around to see if there is a better way. 
+ *    time consuming way to send data. 
  * 
- * 4. Double check what actually needs to be put into the CCR for our uses. Right now it's just all of the things that 
- *    I thought may be importnt. 
+ * 4. Double check what actually needs to be put into the CCR for each mode.
  * 
- * 5. I really like the pointer to the eight bit buffer so that you can portion out the data, but make sure that this appraoch 
- *    is valid. 
  */
-
-
-MAKE NEW TODOS SO THAT CODE CAN BE REVISED SUCCESSFULLY IN THE FUTURE
