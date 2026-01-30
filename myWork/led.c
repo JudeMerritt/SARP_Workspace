@@ -3,12 +3,6 @@
 #include "myWork/systick.h"
 #include "myWork/led.h"
 
-typedef enum {
-    GREEN,
-    YELLOW,
-    RED
-}led_t;
-
 typedef struct {
     uint8_t port; // Which port (GPIOB = 1, GPIOE = 4)
     uint8_t pin;  // Which pin
@@ -38,4 +32,16 @@ void led_init(int led) {
 
 void toggle_led(int led) {
     TOGL_FIELD(GPIOx_ODR[LED_MAP[led].port], GPIOx_ODR_ODx[LED_MAP[led].pin]);
+}
+
+void led_countdown(int time) {
+    systick_init();
+    int time_ms = time * 1000;
+
+    toggle_led(GREEN);
+    systick_delay(time_ms);
+    toggle_led(YELLOW);
+    systick_delay(time_ms);
+    toggle_led(RED);
+    systick_delay(time_ms);
 }

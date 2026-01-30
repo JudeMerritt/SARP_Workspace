@@ -22,3 +22,11 @@ void led_init(int led);
  *            0 -> GREEN | 1 -> YELLOW | 2 -> RED
  */
 void toggle_led(int led);
+
+/**
+ * @brief Initiates a countdown using the GREEN, YELLOW, and RED LEDs.
+ * 
+ * @param time specifies the amount of time in seconds that illapses between
+ * LED flash. The total countdown time will be time * 3.
+ */
+void led_countdown(int time);
