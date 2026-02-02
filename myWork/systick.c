@@ -41,7 +41,7 @@ void systick_init() {
 }
 
 void systick_delay(uint32_t delay) {
-    if (delay == 0) return TI_ERRC_INVALID_ARG;
+    if (delay == 0) return;
 
     //Clear current value
     WRITE_FIELD(STK_CVR, STK_CVR_CURRENT, 0U);

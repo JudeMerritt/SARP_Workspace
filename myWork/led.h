@@ -24,7 +24,10 @@ void led_init(int led);
 void toggle_led(int led);
 
 /**
- * @brief Initiates a countdown using the GREEN, YELLOW, and RED LEDs.
+ * @brief Initiates a countdown using the GREEN, YELLOW, and RED LEDs. The LEDs will
+ * turn on one at a time, then turn off simultaneously at the end of the countdown. 
+ * led_countdown assumes that all LEDs are turned off when called, and will only work if the systick 
+ * timer has been initialized. 
  * 
  * @param time specifies the amount of time in seconds that illapses between
  * LED flash. The total countdown time will be time * 3.

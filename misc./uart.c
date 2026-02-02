@@ -19,14 +19,14 @@
  * @brief USART Driver Implementation
  */
 
-#include "misc./uart.h"
-#include "include/mmio.h"
+#include "uart.h"
+#include "../internal/mmio.h"
 #include "gpio.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include "include/mmio.h"
+#include <internal/mmio.h>
 
 #define CR_REG_COUNT 3
 #define NUM_REQUESTS_PER_UART 2
@@ -98,311 +98,314 @@ uint32_t timeout;
 bool set_alternate_function(uart_channel_t channel, uint8_t tx_pin,
                             uint8_t rx_pin, uint8_t ck_pin) {
   switch (channel) {
-  case UART1:
-    // if (tx_pin == 74) {
-    //   tal_alternate_mode(tx_pin, 3);
-    // } else if (tx_pin == 98) {
-    //   tal_alternate_mode(tx_pin, 5);
-    // } else if (tx_pin == 133) {
-    //   tal_alternate_mode(tx_pin, 6);
-    // } else {
-    //   return false;
-    // }
-    if (tx_pin == 98 || tx_pin == 133) {
-      tal_alternate_mode(tx_pin, 7);
-    } else if (tx_pin == 74) {
-      tal_alternate_mode(tx_pin, 4);
-    } else {
-      // // tal_raise(flag, "Invalid TX Pin for channel");
-      return false;
-    }
+    case UART1:
+      // if (tx_pin == 74) {
+      //   tal_alternate_mode(tx_pin, 3);
+      // } else if (tx_pin == 98) {
+      //   tal_alternate_mode(tx_pin, 5);
+      // } else if (tx_pin == 133) {
+      //   tal_alternate_mode(tx_pin, 6);
+      // } else {
+      //   return false;
+      // }
+      if (tx_pin == 98 || tx_pin == 133) {
+        tal_alternate_mode(tx_pin, 7);
+      } else if (tx_pin == 74) {
+        tal_alternate_mode(tx_pin, 4);
+      } else {
+        // // tal_raise(flag, "Invalid TX Pin for channel");
+        return false;
+      }
 
-    // if (rx_pin == 75) {
-    //   tal_alternate_mode(rx_pin, 4);
-    // } else if (rx_pin == 99) {
-    //   tal_alternate_mode(rx_pin, 3);
-    // } else if (rx_pin == 134) {
-    //   tal_alternate_mode(rx_pin, 5);
-    // } else {
-    //   return false;
-    // }
-    if (rx_pin == 99 || rx_pin == 134) {
-      tal_alternate_mode(rx_pin, 7);
-    } else if (rx_pin == 75) {
-      tal_alternate_mode(rx_pin, 4);
-    } else {
-      // // tal_raise(flag, "Invalid RX Pin for channel");
-      return false;
-    }
-    // if (ck_pin == 97) {
-    //   tal_alternate_mode(ck_pin, 5);
-    // } else {
-    //   return false;
-    // }
+      // if (rx_pin == 75) {
+      //   tal_alternate_mode(rx_pin, 4);
+      // } else if (rx_pin == 99) {
+      //   tal_alternate_mode(rx_pin, 3);
+      // } else if (rx_pin == 134) {
+      //   tal_alternate_mode(rx_pin, 5);
+      // } else {
+      //   return false;
+      // }
+      if (rx_pin == 99 || rx_pin == 134) {
+        tal_alternate_mode(rx_pin, 7);
+      } else if (rx_pin == 75) {
+        tal_alternate_mode(rx_pin, 4);
+      } else {
+        // // tal_raise(flag, "Invalid RX Pin for channel");
+        return false;
+      }
+      // if (ck_pin == 97) {
+      //   tal_alternate_mode(ck_pin, 5);
+      // } else {
+      //   return false;
+      // }
 
-    break;
-  case UART2:
-    // if (tx_pin == 39) {
-    //   tal_alternate_mode(tx_pin, 4);
-    // } else if (tx_pin == 117) {
-    //   tal_alternate_mode(tx_pin, 1);
-    // } else {
-    //   return false;
-    // }
-    if (tx_pin == 39 || tx_pin == 117) {
-      tal_alternate_mode(tx_pin, 7);
-    } else {
-      // tal_raise(flag, "Invalid TX Pin for channel");
-      return false;
-    }
+      break;
+    case UART2:
+      // if (tx_pin == 39) {
+      //   tal_alternate_mode(tx_pin, 4);
+      // } else if (tx_pin == 117) {
+      //   tal_alternate_mode(tx_pin, 1);
+      // } else {
+      //   return false;
+      // }
+      if (tx_pin == 39 || tx_pin == 117) {
+        tal_alternate_mode(tx_pin, 7);
+      } else {
+        // tal_raise(flag, "Invalid TX Pin for channel");
+        return false;
+      }
 
-    // if(rx_pin == 40) {
-    //   tal_alternate_mode(rx_pin, 4);
-    // } else if (rx_pin == 120) {
-    //   tal_alternate_mode(rx_pin, 5);
-    // } else {
-    //   return false;
-    // }
-    if (rx_pin == 40 || rx_pin == 120) {
-      tal_alternate_mode(rx_pin, 7);
-    } else {
-      // tal_raise(flag, "Invalid RX Pin for channel");
-      return false;
-    }
+      // if(rx_pin == 40) {
+      //   tal_alternate_mode(rx_pin, 4);
+      // } else if (rx_pin == 120) {
+      //   tal_alternate_mode(rx_pin, 5);
+      // } else {
+      //   return false;
+      // }
+      if (rx_pin == 40 || rx_pin == 120) {
+        tal_alternate_mode(rx_pin, 7);
+      } else {
+        // tal_raise(flag, "Invalid RX Pin for channel");
+        return false;
+      }
 
-    if (ck_pin == 43) {
-      tal_alternate_mode(ck_pin, 4);
-    } else if (ck_pin == 121) {
-      tal_alternate_mode(ck_pin, 3);
-    }else {
-      return false;
-    }
-    break;
-  case UART3:
-    // if (tx_pin == 66) {
-    //   tal_alternate_mode(tx_pin, 6);
-    // } else if (tx_pin == 76) {
-    //   tal_alternate_mode(tx_pin, 2);
-    // } else if (tx_pin == 109) {
-    //   tal_alternate_mode(tx_pin, 3);
-    // } else {
-    //   return false;
-    // }
-    if (tx_pin == 66 || tx_pin == 109 || tx_pin == 76) {
-      tal_alternate_mode(tx_pin, 7);
-    } else {
-      // tal_raise(flag, "Invalid TX Pin for channel");
-      return false;
-    }
-    // if(rx_pin == 67) {
-    //   tal_alternate_mode(rx_pin, 5);
-    // } else if (rx_pin == 77) {
-    //   tal_alternate_mode(rx_pin, 2);
-    // } else if (rx_pin == 110) {
-    //   tal_alternate_mode(rx_pin, 3);
-    // } else {
-    //   return false;
-    // }
-    if (rx_pin == 67 || rx_pin == 110 || rx_pin == 77) {
-      tal_alternate_mode(rx_pin, 7);
-    } else {
-      // tal_raise(flag, "Invalid RX Pin for channel");
-      return false;
-    }
-    if (ck_pin == 72) {
-      tal_alternate_mode(ck_pin, 4);
-    } else if (ck_pin == 78) {
-      tal_alternate_mode(ck_pin, 2);
-    } else if (ck_pin == 111) {
-      tal_alternate_mode(ck_pin, 3);
-    } else {
-      return false;
-    }
-    break;
-  case UART4:
-    // TODO: what the HECK does PA0_C mean??
-    if (tx_pin == 37 || tx_pin == 137 || tx_pin == 109 || tx_pin == 113) {
-      tal_alternate_mode(tx_pin, 8);
-    } else if (tx_pin == 100) {
-      tal_alternate_mode(tx_pin, 6);
-    } else {
-      // tal_raise(flag, "Invalid TX Pin for channel");
-      return false;
-    }
-    // if (tx_pin == 101 || tx_pin == 109) {
-    //   tal_alternate_mode(tx_pin, 4);
-    // } else if (tx_pin == 0) {
-    //   tal_alternate_mode(tx_pin, 1);
-    // }  else if (tx_pin == 112) {
-    //   tal_alternate_mode(tx_pin, 2);
-    // } else if (tx_pin == 137) {
-    //   tal_alternate_mode(tx_pin, 7);
-    // } else {
-    //   return false;
-    // }
-    if (rx_pin == 38 || rx_pin == 136 || rx_pin == 110 || rx_pin == 112) {
-      tal_alternate_mode(rx_pin, 0);
-    } else {
-      // tal_raise(flag, "Invalid RX Pin for channel");
-      return false;
-    }
+      if (ck_pin == 43) {
+        tal_alternate_mode(ck_pin, 4);
+      } else if (ck_pin == 121) {
+        tal_alternate_mode(ck_pin, 3);
+      }else {
+        return false;
+      }
+      break;
+    case UART3:
+      // if (tx_pin == 66) {
+      //   tal_alternate_mode(tx_pin, 6);
+      // } else if (tx_pin == 76) {
+      //   tal_alternate_mode(tx_pin, 2);
+      // } else if (tx_pin == 109) {
+      //   tal_alternate_mode(tx_pin, 3);
+      // } else {
+      //   return false;
+      // }
+      if (tx_pin == 66 || tx_pin == 109 || tx_pin == 76) {
+        tal_alternate_mode(tx_pin, 7);
+      } else {
+        // tal_raise(flag, "Invalid TX Pin for channel");
+        return false;
+      }
+      // if(rx_pin == 67) {
+      //   tal_alternate_mode(rx_pin, 5);
+      // } else if (rx_pin == 77) {
+      //   tal_alternate_mode(rx_pin, 2);
+      // } else if (rx_pin == 110) {
+      //   tal_alternate_mode(rx_pin, 3);
+      // } else {
+      //   return false;
+      // }
+      if (rx_pin == 67 || rx_pin == 110 || rx_pin == 77) {
+        tal_alternate_mode(rx_pin, 7);
+      } else {
+        // tal_raise(flag, "Invalid RX Pin for channel");
+        return false;
+      }
+      if (ck_pin == 72) {
+        tal_alternate_mode(ck_pin, 4);
+      } else if (ck_pin == 78) {
+        tal_alternate_mode(ck_pin, 2);
+      } else if (ck_pin == 111) {
+        tal_alternate_mode(ck_pin, 3);
+      } else {
+        return false;
+      }
+      break;
+    case UART4:
+      // TODO: what the HECK does PA0_C mean??
+      if (tx_pin == 37 || tx_pin == 137 || tx_pin == 109 || tx_pin == 113) {
+        tal_alternate_mode(tx_pin, 8);
+      } else if (tx_pin == 101) {
+        tal_alternate_mode(tx_pin, 6);
+      } else {
+        // tal_raise(flag, "Invalid TX Pin for channel");
+        return false;
+      }
+      // if (tx_pin == 101 || tx_pin == 109) {
+      //   tal_alternate_mode(tx_pin, 4);
+      // } else if (tx_pin == 0) {
+      //   tal_alternate_mode(tx_pin, 1);
+      // }  else if (tx_pin == 112) {
+      //   tal_alternate_mode(tx_pin, 2);
+      // } else if (tx_pin == 137) {
+      //   tal_alternate_mode(tx_pin, 7);
+      // } else {
+      //   return false;
+      // }
+      if (rx_pin == 38 || rx_pin == 137 || rx_pin == 110 || rx_pin == 112) {
+        tal_alternate_mode(rx_pin, 8);
+      } else if (rx_pin == 100) {
+        tal_alternate_mode(rx_pin, 6);
+      } else {
+        // tal_raise(flag, "Invalid RX Pin for channel");
+        return false;
+      }
 
-    // TODO: what does PA1_C mean
-    // if (rx_pin == 0) {
-    //   // tal_alternate_mode(rx_pin, 0); // TODO: I9 is alt mode 0, H14 alt mode 1??
-    // } else if (rx_pin == 100 || rx_pin == 110) {
-    //   tal_alternate_mode(rx_pin, 4);
-    // } else if (rx_pin == 112) {
-    //   tal_alternate_mode(rx_pin, 2);
-    // } else if (rx_pin == 136) {
-    //   tal_alternate_mode(rx_pin, 6);
-    // } else {
-    //   return false;
-    // }
-    break;
-  case UART5:
-    if (tx_pin == 133 || tx_pin == 73) {
-      tal_alternate_mode(tx_pin, 14);
-    } else if (tx_pin == 111) {
-      tal_alternate_mode(tx_pin, 8);
-    } else {
-      // tal_raise(flag, "Invalid TX Pin for channel");
-      return false;
-    }
-    if (rx_pin == 132 || rx_pin == 72) {
-      tal_alternate_mode(rx_pin, 14);
-    } else if (rx_pin == 114) {
-      tal_alternate_mode(rx_pin, 8);
-    } else {
-      // tal_raise(flag, "Invalid RX Pin for channel");
-      return false;
-    }
+      // TODO: what does PA1_C mean
+      // if (rx_pin == 0) {
+      //   // tal_alternate_mode(rx_pin, 0); // TODO: I9 is alt mode 0, H14 alt mode 1??
+      // } else if (rx_pin == 100 || rx_pin == 110) {
+      //   tal_alternate_mode(rx_pin, 4);
+      // } else if (rx_pin == 112) {
+      //   tal_alternate_mode(rx_pin, 2);
+      // } else if (rx_pin == 136) {
+      //   tal_alternate_mode(rx_pin, 6);
+      // } else {
+      //   return false;
+      // }
+      break;
+    case UART5:
+      if (tx_pin == 133 || tx_pin == 73) {
+        tal_alternate_mode(tx_pin, 14);
+      } else if (tx_pin == 111) {
+        tal_alternate_mode(tx_pin, 8);
+      } else {
+        // tal_raise(flag, "Invalid TX Pin for channel");
+        return false;
+      }
+      if (rx_pin == 132 || rx_pin == 72) {
+        tal_alternate_mode(rx_pin, 14);
+      } else if (rx_pin == 114) {
+        tal_alternate_mode(rx_pin, 8);
+      } else {
+        // tal_raise(flag, "Invalid RX Pin for channel");
+        return false;
+      }
 
-    // if (tx_pin == 73) {
-    //   tal_alternate_mode(tx_pin, 8);
-    // } else if (tx_pin == 111) {
-    //   tal_alternate_mode(tx_pin, 4);
-    // } else if (tx_pin == 133) {
-    //   tal_alternate_mode(tx_pin, 13);
-    // } else {
-    //   return false;
-    // }
+      // if (tx_pin == 73) {
+      //   tal_alternate_mode(tx_pin, 8);
+      // } else if (tx_pin == 111) {
+      //   tal_alternate_mode(tx_pin, 4);
+      // } else if (tx_pin == 133) {
+      //   tal_alternate_mode(tx_pin, 13);
+      // } else {
+      //   return false;
+      // }
 
 
-    // if (rx_pin == 72) {
-    //   tal_alternate_mode(rx_pin, 10);
-    // } else if (rx_pin ==114 ) {
-    //   tal_alternate_mode(rx_pin, 2);
-    // } else if (rx_pin == 132) {
-    //   tal_alternate_mode(rx_pin, 13);
-    // } else {
-    //   return false;
-    // }
-    break;
-  case UART6:
-    // if (tx_pin == 93) {
-    //   tal_alternate_mode(tx_pin, 5);
-    // } else if (tx_pin == 127) {
-    //   tal_alternate_mode(tx_pin, 3);
-    // } else {
-    //   return false;
-    // }
-    if (tx_pin == 93 || tx_pin == 122) {
-      tal_alternate_mode(tx_pin, 7);
-    } else {
-      // tal_raise(flag, "Invalid TX Pin for channel");
-      return false;
-    }
-    if (rx_pin == 94) {
-      // tal_alternate_mode(rx_pin, 6);
-      tal_alternate_mode(rx_pin, 7);
-    } else if (rx_pin == 122) {
-      tal_alternate_mode(rx_pin, 1);
-    } else {
-      // tal_raise(flag, "Invalid RX Pin for channel");
-      return false;
-    }
+      // if (rx_pin == 72) {
+      //   tal_alternate_mode(rx_pin, 10);
+      // } else if (rx_pin ==114 ) {
+      //   tal_alternate_mode(rx_pin, 2);
+      // } else if (rx_pin == 132) {
+      //   tal_alternate_mode(rx_pin, 13);
+      // } else {
+      //   return false;
+      // }
+      break;
+    case UART6:
+      // if (tx_pin == 93) {
+      //   tal_alternate_mode(tx_pin, 5);
+      // } else if (tx_pin == 127) {
+      //   tal_alternate_mode(tx_pin, 3);
+      // } else {
+      //   return false;
+      // }
+      if (tx_pin == 93 || tx_pin == 122) {
+        tal_alternate_mode(tx_pin, 7);
+      } else {
+        // tal_raise(flag, "Invalid TX Pin for channel");
+        return false;
+      }
+      if (rx_pin == 94) {
+        // tal_alternate_mode(rx_pin, 6);
+        tal_alternate_mode(rx_pin, 7);
+      } else if (rx_pin == 122) {
+        tal_alternate_mode(rx_pin, 1);
+      } else {
+        // tal_raise(flag, "Invalid RX Pin for channel");
+        return false;
+      }
 
-    if (ck_pin == 87) {
-      tal_alternate_mode(ck_pin, 2);
-    } else if (ck_pin == 95) {
-      tal_alternate_mode(ck_pin, 4);
-    } else {
-      return false;
-    }
-    break;
-  case UART7:
-    if (tx_pin == 108 || tx_pin == 131) {
-      tal_alternate_mode(tx_pin, 11);
-    } else if (tx_pin == 58 || tx_pin == 21) {
-      tal_alternate_mode(tx_pin, 7);
-    } else {
-      // tal_raise(flag, "Invalid TX Pin for channel");
-      return false;
-    }
+      if (ck_pin == 87) {
+        tal_alternate_mode(ck_pin, 2);
+      } else if (ck_pin == 95) {
+        tal_alternate_mode(ck_pin, 4);
+      } else {
+        return false;
+      }
+      break;
+    case UART7:
+      if (tx_pin == 108 || tx_pin == 131) {
+        tal_alternate_mode(tx_pin, 11);
+      } else if (tx_pin == 58 || tx_pin == 21) {
+        tal_alternate_mode(tx_pin, 7);
+      } else {
+        // tal_raise(flag, "Invalid TX Pin for channel");
+        return false;
+      }
 
-    // if (tx_pin == 21) {
-    //   tal_alternate_mode(tx_pin, 3);
-    // } else if (tx_pin == 58) {
-    //   tal_alternate_mode(tx_pin, 2);
-    // } else if (tx_pin == 108) { // PA15(JTDI) = ?
-    //   tal_alternate_mode(tx_pin, 8);
-    // } else if (tx_pin == 131) { // PB4(NJTRST)= ?
-    //   tal_alternate_mode(tx_pin, 9);
-    // } else {
-    //   return false;
-    // } 
-    if (rx_pin == 97 || rx_pin == 130) {
-      tal_alternate_mode(rx_pin, 11);
-    } else if (rx_pin == 57 || rx_pin == 20) {
-      tal_alternate_mode(rx_pin, 7);
-    } else {
-      // tal_raise(flag, "Invalid RX Pin for channel");
-      return false;
-    }
+      // if (tx_pin == 21) {
+      //   tal_alternate_mode(tx_pin, 3);
+      // } else if (tx_pin == 58) {
+      //   tal_alternate_mode(tx_pin, 2);
+      // } else if (tx_pin == 108) { // PA15(JTDI) = ?
+      //   tal_alternate_mode(tx_pin, 8);
+      // } else if (tx_pin == 131) { // PB4(NJTRST)= ?
+      //   tal_alternate_mode(tx_pin, 9);
+      // } else {
+      //   return false;
+      // } 
+      if (rx_pin == 97 || rx_pin == 130) {
+        tal_alternate_mode(rx_pin, 11);
+      } else if (rx_pin == 57 || rx_pin == 20) {
+        tal_alternate_mode(rx_pin, 7);
+      } else {
+        // tal_raise(flag, "Invalid RX Pin for channel");
+        return false;
+      }
 
-    // if (rx_pin == 20) {
-    //   tal_alternate_mode(rx_pin, 3);
-    // } else if (rx_pin == 57) {
-    //   tal_alternate_mode(rx_pin, 2);
-    // } else if (rx_pin == 97) {
-    //   tal_alternate_mode(rx_pin, 7);
-    // } else if (rx_pin == 130) { // PB3(JTDO/TRACESWO) = ?
-    //   tal_alternate_mode(rx_pin, 8);
-    // } else {
-    //   return false;
-    // }
-    break;
-  case UART8:
-    // if (tx_pin == 0 || tx_pin == 139) {
-    //   tal_alternate_mode(tx_pin, 2);
-    // } else {
-    //   return false;
-    // }
+      // if (rx_pin == 20) {
+      //   tal_alternate_mode(rx_pin, 3);
+      // } else if (rx_pin == 57) {
+      //   tal_alternate_mode(rx_pin, 2);
+      // } else if (rx_pin == 97) {
+      //   tal_alternate_mode(rx_pin, 7);
+      // } else if (rx_pin == 130) { // PB3(JTDO/TRACESWO) = ?
+      //   tal_alternate_mode(rx_pin, 8);
+      // } else {
+      //   return false;
+      // }
+      break;
+    case UART8:
+      // if (tx_pin == 0 || tx_pin == 139) {
+      //   tal_alternate_mode(tx_pin, 2);
+      // } else {
+      //   return false;
+      // }
 
-    // if (rx_pin == 0) {
-    //   tal_alternate_mode(rx_pin, 2);
-    // } else if (rx_pin == 138) {
-    //   tal_alternate_mode(rx_pin,4);
-    // } else {
-    //   return false;
-    // }
-    if (tx_pin == 139) {
-      tal_alternate_mode(tx_pin, 8);
-    } else {
-      // tal_raise(flag, "Invalid TX Pin for channel");
+      // if (rx_pin == 0) {
+      //   tal_alternate_mode(rx_pin, 2);
+      // } else if (rx_pin == 138) {
+      //   tal_alternate_mode(rx_pin,4);
+      // } else {
+      //   return false;
+      // }
+      if (tx_pin == 139) {
+        tal_alternate_mode(tx_pin, 8);
+      } else {
+        // tal_raise(flag, "Invalid TX Pin for channel");
+        return false;
+      }
+      if (rx_pin == 138) {
+        tal_alternate_mode(rx_pin, 8);
+      } else {
+        // tal_raise(flag, "Invalid RX Pin for channel");
+        return false;
+      }
+      break;
+    default:
       return false;
-    }
-    if (rx_pin == 138) {
-      tal_alternate_mode(rx_pin, 8);
-    } else {
-      // tal_raise(flag, "Invalid RX Pin for channel");
-      return false;
-    }
-    break;
-  case UART_CHANNEL_COUNT:
-    break;
   }
+
   return true;
 }
 
@@ -480,10 +483,10 @@ bool uart_read_byte(uint8_t channel, uint8_t *data) {
 static inline bool verify_transfer_parameters(uart_channel_t channel, uint8_t *buff,
                                        size_t size) {
 
-  if (channel == ((void*) (0))) {
+  if (channel == 0) { // USED TO BE: channel == ((void*) (0)
     return false;
   }
-  if (buff == ((void*) (0))) {
+  if (buff == 0) { // USED TO BE: channel == ((void*) (0)
     // tal_raise(flag, "Buffer cannot be NULL");
     return false;
   }
@@ -564,7 +567,6 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
       break;
     default:
       return false;
-      break;
   }
   switch (channel) {
     UART_FIELD_GENERATOR(UART1, 4, RCC_APB2ENR)
@@ -575,10 +577,9 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
     UART_FIELD_GENERATOR(UART6, 5, RCC_APB2ENR)
     UART_FIELD_GENERATOR(UART7, 30, RCC_APB1LENR)
     UART_FIELD_GENERATOR(UART8, 31, RCC_APB1LENR)
-  default:
-    // Handle error or invalid USART number
-    return false;
-    break;
+    default:
+      // Handle error or invalid USART number
+      return false;
   }
 
   tal_enable_clock(tx_pin);

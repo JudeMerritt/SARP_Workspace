@@ -35,7 +35,8 @@ void toggle_led(int led) {
 }
 
 void led_countdown(int time) {
-    systick_init();
+    if (READ_FIELD(STK_CSR, STK_CSR_ENABLE) == 0) return;
+
     int time_ms = time * 1000;
 
     toggle_led(GREEN);
@@ -44,4 +45,8 @@ void led_countdown(int time) {
     systick_delay(time_ms);
     toggle_led(RED);
     systick_delay(time_ms);
+
+    toggle_led(RED);
+    toggle_led(YELLOW);
+    toggle_led(GREEN);
 }

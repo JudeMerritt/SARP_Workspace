@@ -22,8 +22,8 @@
 #include <stdint.h>
 #include "include/spi.h"
 #include "include/errc.h"
-#include "include/systick.h"
-#include "include/barometer.h"
+#include "myWork/systick.h"
+#include "myWork/barometer.h"
 
 #define D1_BASE_CMD 0x40
 #define D2_BASE_CMD 0x50
